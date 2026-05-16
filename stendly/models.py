@@ -1,7 +1,7 @@
 """
 Data models for Stendly API responses and requests.
 
-All models use Pydantic v3 for robust validation, serialization, and
+All models use Pydantic v2 for robust validation, serialization, and
 type safety. Models automatically convert snake_case JSON responses
 to PascalCase Python attributes via ConfigDict.
 
@@ -70,6 +70,7 @@ class PaymentIntent(BaseModel):
         str_strip_whitespace=True,
         validate_assignment=True,
         use_enum_values=True,
+        populate_by_name=True,
     )
     
     id: UUID = Field(
@@ -79,18 +80,21 @@ class PaymentIntent(BaseModel):
     )
     order_id: str = Field(
         ...,
+        alias="orderId",
         description="Merchant's order reference number (unique per merchant)",
         max_length=100,
         examples=["ORDER-2025-001", "invoice_12345"],
     )
     expected_amount_cents: int = Field(
         ...,
+        alias="expectedAmountCents",
         description="Expected payment amount in cents (e.g., 4999 = $49.99)",
         gt=0,
         examples=[5000, 9999, 25000],
     )
     reference_address: str = Field(
         ...,
+        alias="referenceAddress",
         description="Escrow address (SPL token account) for the payment",
         min_length=32,
         max_length=44,
@@ -98,10 +102,18 @@ class PaymentIntent(BaseModel):
     )
     destination_address: str = Field(
         ...,
+        alias="destinationAddress",
         description="Merchant's USDC receiving address",
         min_length=32,
         max_length=44,
         examples=["E7g2wdh9Z7a5vZkpQmdRZaVJ5z9pK2P38a6GKxeJ2Hc8"],
+    )
+    paid_amount_cents: int = Field(
+        0,
+        alias="paidAmountCents",
+        description="Amount actually paid in cents (0 if not yet paid)",
+        ge=0,
+        examples=[0, 5000],
     )
     status: PaymentIntentStatus = Field(
         ...,
@@ -156,6 +168,10 @@ class DailyStats(BaseModel):
         >>> print(f"Volume: ${stats.volume_cents / 100:.2f}")
     """
     
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    
     date: datetime = Field(
         ...,
         description="Date for this statistics entry",
@@ -163,6 +179,7 @@ class DailyStats(BaseModel):
     )
     volume_cents: int = Field(
         ...,
+        alias="volumeCents",
         description="Total volume in cents for this day",
         ge=0,
         examples=[15000, 25000],
@@ -200,26 +217,34 @@ class MerchantStats(BaseModel):
         >>> print(f"Success rate: {stats.success_rate:.1f}%")
     """
     
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
+    
     total_volume_cents: int = Field(
         ...,
+        alias="totalVolumeCents",
         description="Total payment volume in cents over the last 30 days",
         ge=0,
         examples=[50000, 1000000],
     )
     total_transactions: int = Field(
         ...,
+        alias="totalTransactions",
         description="Total transaction count (last 30 days)",
         ge=0,
         examples=[150, 2500],
     )
     successful_transactions: int = Field(
         ...,
+        alias="successfulTransactions",
         description="Number of successfully paid transactions",
         ge=0,
         examples=[148, 2480],
     )
     chart_data: List[DailyStats] = Field(
         default_factory=list,
+        alias="chartData",
         description="Daily statistics for last 31 days (today + 30 days prior)",
     )
     
@@ -286,6 +311,7 @@ class Terminal(BaseModel):
     model_config = ConfigDict(
         str_strip_whitespace=True,
         validate_assignment=True,
+        populate_by_name=True,
     )
     
     id: UUID = Field(
@@ -301,10 +327,12 @@ class Terminal(BaseModel):
     )
     is_active: bool = Field(
         ...,
+        alias="isActive",
         description="Whether the terminal is active and accepting payments",
     )
     created_at: datetime = Field(
         ...,
+        alias="createdAt",
         description="Terminal creation timestamp (ISO 8601)",
         examples=["2026-05-01T10:00:00Z"],
     )
@@ -335,6 +363,7 @@ class MerchantProfile(BaseModel):
     model_config = ConfigDict(
         str_strip_whitespace=True,
         validate_assignment=True,
+        populate_by_name=True,
     )
     
     id: UUID = Field(
@@ -349,6 +378,7 @@ class MerchantProfile(BaseModel):
     )
     payout_address: str = Field(
         ...,
+        alias="payoutAddress",
         description="USDC receiving address for receiving payments",
         min_length=32,
         max_length=44,
@@ -356,6 +386,7 @@ class MerchantProfile(BaseModel):
     )
     webhook_url: Optional[str] = Field(
         None,
+        alias="webhookUrl",
         description="Webhook endpoint URL for payment events",
         examples=["https://myshop.com/webhooks/stendly"],
     )
@@ -367,10 +398,15 @@ class MerchantProfile(BaseModel):
     raw_api_key: Optional[str] = Field(
         None,
         description=(
-            "Full API key for API authentication (prefix: st_live_ or st_test_). "
+            "Full API key for API authentication (prefix: st_live_). "
             "ONLY shown once upon generation. Store in secure location!"
         ),
         examples=["st_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"],
+    )
+    verification_status: Optional[str] = Field(
+        None,
+        alias="verificationStatus",
+        description="KYB verification status (pending, verified, rejected)",
     )
 
 
@@ -491,6 +527,7 @@ class CreatePaymentIntentRequest(BaseModel):
     )
     order_id: str = Field(
         ...,
+        min_length=1,
         description="Unique order reference (max 100 characters)",
         max_length=100,
         examples=["ORDER-001", "invoice_2025_05"],
@@ -519,6 +556,7 @@ class CreateTerminalRequest(BaseModel):
     
     name: str = Field(
         ...,
+        min_length=1,
         description="Terminal display name (max 100 characters)",
         max_length=100,
         examples=["Main Counter", "Table 5"],

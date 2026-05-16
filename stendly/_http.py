@@ -49,7 +49,7 @@ class HTTPClient:
 
     Args:
         base_url: API base URL (e.g., "https://api.stendly.com")
-        api_key: Merchant API key (st_live_* or st_test_*)
+        api_key: Merchant API key (st_live_*)
         timeout: Request timeout in seconds
         max_retries: Maximum retry attempts for failed requests
         http2: Enable HTTP/2 support
@@ -103,7 +103,7 @@ class HTTPClient:
             headers={
                 "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json",
-                "User-Agent": f"stendly-python-sdk/0.1.0",
+                "User-Agent": "python-sdk/0.1.0",
                 "X-Stendly-SDK": "python",
             },
         )
@@ -300,7 +300,7 @@ class AsyncHTTPClient:
 
     Args:
         base_url: API base URL (e.g., "https://api.stendly.com")
-        api_key: Merchant API key (st_live_* or st_test_*)
+        api_key: Merchant API key (st_live_*)
         timeout: Request timeout in seconds
         max_retries: Maximum retry attempts for failed requests
         http2: Enable HTTP/2 support
@@ -354,7 +354,7 @@ class AsyncHTTPClient:
             headers={
                 "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json",
-                "User-Agent": f"stendly-python-sdk/0.1.0",
+                "User-Agent": "python-sdk/0.1.0",
                 "X-Stendly-SDK": "python",
             },
         )

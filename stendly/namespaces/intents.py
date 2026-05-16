@@ -175,6 +175,7 @@ class IntentsNamespace:
         if idempotency_key is None:
             idempotency_key = self._http_client.generate_idempotency_key()
 
+
         # Validate request data using Pydantic, convert to our ValidationError
         try:
             request_data = CreatePaymentIntentRequest(
@@ -254,8 +255,8 @@ class IntentsNamespace:
         logger.debug(f"Retrieving payment intent: id={intent_id}")
 
         response = self._http_client.request(
-            method="GET",
-            path=f"/api/merchants/intents/{intent_id}",
+            "GET",
+            f"/api/merchants/intents/{intent_id}",
         )
 
         response_data = response.json()

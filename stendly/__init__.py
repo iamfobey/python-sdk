@@ -8,24 +8,24 @@ Python applications.
 
 Quick Start:
     >>> from stendly import Client
-    >>> 
+    >>>
     >>> # Initialize client
     >>> client = Client(api_key="st_live_your_api_key")
-    >>> 
+    >>>
     >>> # Create payment intent
     >>> intent = client.intents.create(
     ...     amount_cents=4999,
     ...     order_id="order_001"
     ... )
     >>> print(f"Escrow address: {intent.reference_address}")
-    >>> 
+    >>>
     >>> # Close when done
     >>> client.close()
 
 Async usage:
     >>> from stendly import AsyncClient
     >>> import asyncio
-    >>> 
+    >>>
     >>> async def main():
     ...     client = AsyncClient(api_key="st_live_...")
     ...     intent = await client.intents.create(
@@ -39,14 +39,14 @@ Webhook verification:
     >>> from stendly import Client
     >>> import hashlib
     >>> import hmac
-    >>> 
+    >>>
     >>> client = Client(api_key="st_live_...")
-    >>> 
+    >>>
     >>> # Verify incoming webhook
     >>> signature = request.headers["X-Stendly-Signature"]
     >>> payload = request.get_data()
     >>> webhook_secret = "whsec_..."
-    >>> 
+    >>>
     >>> try:
     ...     event = client.webhooks.construct_event(
     ...         payload=payload,
@@ -59,7 +59,7 @@ Webhook verification:
     ...     # Invalid signature - reject
     ...     return "Invalid signature", 400
 
-Full documentation: https://docs.stendly.com/python-sdk
+Full documentation: https://docs.stendly.com/sdk/python
 """
 
 from __future__ import annotations

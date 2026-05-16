@@ -4,8 +4,8 @@ Non-custodial payments on Solana — official Python SDK for [Stendly API](https
 
 [![PyPI version](https://img.shields.io/pypi/v/stendly.svg)](https://pypi.org/project/stendly/)
 [![Python versions](https://img.shields.io/pypi/pyversions/stendly.svg)](https://pypi.org/project/stendly/)
-[![License: MIT](https://img.shields.io/pypi/l/stendly.svg)](https://github.com/stendly/stendly-python/blob/main/LICENSE)
-[![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](https://docs.stendly.com/python-sdk)
+[![License: MIT](https://img.shields.io/pypi/l/stendly.svg)](https://github.com/stendly-dev/python-sdk/blob/main/LICENSE)
+[![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](https://docs.stendly.com/sdk/python)
 
 ## Table of Contents
 
@@ -68,8 +68,8 @@ pipenv install stendly
 Or install from source:
 
 ```bash
-git clone https://github.com/stendly/stendly-python.git
-cd stendly-python/sdk/python
+git clone https://github.com/stendly-dev/python-sdk.git
+cd python-sdk/
 pip install -e .
 ```
 
@@ -87,7 +87,8 @@ pip install -e .
 
 ### 1. Get your API key
 
-Log into your [Stendly Dashboard](https://dashboard.stendly.com) and navigate to API Keys. Copy your secret key (starts with `st_live_` for production or `st_test_` for development).
+Log into your [Stendly Dashboard](https://dashboard.stendly.com) and navigate to API Keys. Copy your secret key (starts
+with `st_live_`). Use `environment="devnet"` for development and `environment="mainnet"` for production.
 
 ### 2. Install the SDK
 
@@ -152,6 +153,7 @@ asyncio.run(main())
 ### Payment Intents
 
 A PaymentIntent represents a request for payment. It includes:
+
 - `reference_address`: Escrow address where customer sends USDC
 - `destination_address`: Your payout address (merchant's wallet)
 - `expected_amount_cents`: Amount you expect to receive
@@ -193,7 +195,8 @@ grant_premium_access(intent.order_id)
 
 ### Idempotency
 
-All `create` methods automatically generate an `Idempotency-Key` header (UUID v4). This prevents duplicate charges if your request times out and you retry.
+All `create` methods automatically generate an `Idempotency-Key` header (UUID v4). This prevents duplicate charges if
+your request times out and you retry.
 
 ```python
 # Same order_id + amount → returns existing intent
@@ -283,6 +286,7 @@ async def webhook(request: Request):
 ```
 
 **Security notes:**
+
 - Store `WEBHOOK_SECRET` in environment variable (never in code)
 - Use HTTPS in production
 - Reject webhooks older than 5 minutes (default)
@@ -294,9 +298,11 @@ async def webhook(request: Request):
 
 ### API Key Format
 
-Stendly uses secret API keys that start with:
-- `st_live_` — Production (mainnet)
-- `st_test_` — Development (devnet)
+Stendly uses secret API keys that start with `st_live_`.
+
+Use the `environment` parameter to select the network:
+- `environment="mainnet"` — Production
+- `environment="devnet"` — Development/sandbox
 
 **Never commit API keys to version control!**
 
@@ -317,11 +323,11 @@ client = Client(api_key="st_live_xxxxx")  # ❌
 # Production
 client = Client(api_key="st_live_xxx", environment="mainnet")
 
-# Development sandbox
-client = Client(api_key="st_test_xxx", environment="devnet")
+# Development sandbox (same key prefix, different environment)
+client = Client(api_key="st_live_xxx", environment="devnet")
 ```
 
-**Note:** Test keys only work with devnet. Live keys only work with mainnet.
+**Note:** The same `st_live_` key prefix is used for both environments. Set `environment="devnet"` for development/testing.
 
 ---
 
@@ -380,6 +386,7 @@ CANCELLED (manual)
 ```
 
 **Transitions:**
+
 - `pending` → `paid`: Payment received
 - `pending` → `underpaid`: Payment received but less than expected
 - `pending` → `expired`: Timeout (default 30 min)
@@ -448,6 +455,7 @@ header = f"t={timestamp},v1={signature}"
 ```
 
 **Important:**
+
 - Use raw request body (bytes), not parsed JSON
 - Do not modify payload before verification
 - Check timestamp is within 5 minutes (replay attack protection)
@@ -574,13 +582,13 @@ Main entry point. Supports both sync and async.
 
 #### Parameters
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `api_key` | `str` | **required** | Secret API key (`st_live_*` or `st_test_*`) |
-| `environment` | `str` | `"mainnet"` | API environment: `"mainnet"` or `"devnet"` |
-| `timeout` | `float` | `10.0` | Request timeout in seconds |
-| `max_retries` | `int` | `2` | Maximum retry attempts for transient failures |
-| `http2` | `bool` | `True` | Enable HTTP/2 support |
+| Parameter     | Type    | Default      | Description                                   |
+|---------------|---------|--------------|-----------------------------------------------|
+| `api_key`     | `str`   | **required** | Secret API key (`st_live_*`)                |
+| `environment` | `str`   | `"mainnet"`  | API environment: `"mainnet"` or `"devnet"`    |
+| `timeout`     | `float` | `10.0`       | Request timeout in seconds                    |
+| `max_retries` | `int`   | `2`          | Maximum retry attempts for transient failures |
+| `http2`       | `bool`  | `True`       | Enable HTTP/2 support                         |
 
 #### Example configs
 
@@ -590,7 +598,7 @@ client = Client(api_key="st_live_xxx")
 
 # Development (devnet sandbox)
 client = Client(
-    api_key="st_test_xxx",
+    api_key="st_live_xxx",
     environment="devnet"
 )
 
@@ -787,15 +795,15 @@ All response models are Pydantic classes with full validation.
 
 #### `PaymentIntent`
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | `UUID` | Unique intent ID |
-| `order_id` | `str` | Your order reference |
-| `expected_amount_cents` | `int` | Expected amount (cents) |
-| `reference_address` | `str` | Escrow Solana address |
-| `destination_address` | `str` | Merchant payout address |
-| `status` | `PaymentIntentStatus` | `"pending"`, `"paid"`, `"expired"`, `"cancelled"`, `"underpaid"` |
-| `expires_at` | `datetime` | Expiration timestamp |
+| Field                   | Type                  | Description                                                      |
+|-------------------------|-----------------------|------------------------------------------------------------------|
+| `id`                    | `UUID`                | Unique intent ID                                                 |
+| `order_id`              | `str`                 | Your order reference                                             |
+| `expected_amount_cents` | `int`                 | Expected amount (cents)                                          |
+| `reference_address`     | `str`                 | Escrow Solana address                                            |
+| `destination_address`   | `str`                 | Merchant payout address                                          |
+| `status`                | `PaymentIntentStatus` | `"pending"`, `"paid"`, `"expired"`, `"cancelled"`, `"underpaid"` |
+| `expires_at`            | `datetime`            | Expiration timestamp                                             |
 
 #### `PaymentIntentStatus` (Enum)
 
@@ -810,59 +818,59 @@ class PaymentIntentStatus(str, Enum):
 
 #### `Terminal`
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | `UUID` | Terminal ID |
-| `name` | `str` | Display name |
-| `is_active` | `bool` | Active status |
+| Field        | Type       | Description        |
+|--------------|------------|--------------------|
+| `id`         | `UUID`     | Terminal ID        |
+| `name`       | `str`      | Display name       |
+| `is_active`  | `bool`     | Active status      |
 | `created_at` | `datetime` | Creation timestamp |
 
 #### `MerchantProfile`
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | `UUID` | Merchant ID |
-| `name` | `str` | Business name |
-| `payout_address` | `str` | USDC receiving address |
-| `webhook_url` | `str | None` | Configured webhook URL |
-| `webhook_secret` | `str | None` | Secret for webhook verification |
-| `raw_api_key` | `str | None` | Full API key (ONLY shown once) |
+| Field            | Type   | Description            |
+|------------------|--------|------------------------|
+| `id`             | `UUID` | Merchant ID            |
+| `name`           | `str`  | Business name          |
+| `payout_address` | `str`  | USDC receiving address |
+| `webhook_url`    | `str   | None`                  | Configured webhook URL |
+| `webhook_secret` | `str   | None`                  | Secret for webhook verification |
+| `raw_api_key`    | `str   | None`                  | Full API key (ONLY shown once) |
 
 #### `MerchantStats`
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `total_volume_cents` | `int` | 30-day total volume |
-| `total_transactions` | `int` | Total txn count |
-| `successful_transactions` | `int` | Paid txn count |
-| `chart_data` | `List[DailyStats]` | Daily breakdown |
-| `success_rate` | `float` (property) | Calculated % |
-| `average_transaction_cents` | `float` (property) | Avg txn amount |
+| Field                       | Type               | Description         |
+|-----------------------------|--------------------|---------------------|
+| `total_volume_cents`        | `int`              | 30-day total volume |
+| `total_transactions`        | `int`              | Total txn count     |
+| `successful_transactions`   | `int`              | Paid txn count      |
+| `chart_data`                | `List[DailyStats]` | Daily breakdown     |
+| `success_rate`              | `float` (property) | Calculated %        |
+| `average_transaction_cents` | `float` (property) | Avg txn amount      |
 
 #### `DailyStats`
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `date` | `datetime` | Date |
-| `volume_cents` | `int` | Daily volume |
-| `transactions` | `int` | Daily count |
+| Field          | Type       | Description  |
+|----------------|------------|--------------|
+| `date`         | `datetime` | Date         |
+| `volume_cents` | `int`      | Daily volume |
+| `transactions` | `int`      | Daily count  |
 
 #### `WebhookEvent`
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `event_type` | `str` | Event name (e.g., `"payment_intent.succeeded"`) |
-| `data` | `WebhookData` | Event payload |
+| Field        | Type          | Description                                     |
+|--------------|---------------|-------------------------------------------------|
+| `event_type` | `str`         | Event name (e.g., `"payment_intent.succeeded"`) |
+| `data`       | `WebhookData` | Event payload                                   |
 
 #### `WebhookData`
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `payment_intent_id` | `UUID` | Intent ID |
-| `order_id` | `str` | Order reference |
-| `amount_cents` | `int` | Actual amount |
-| `expected_amount_cents` | `int` | Expected amount |
-| `tx_signature` | `str | None` | Solana tx signature |
+| Field                   | Type   | Description     |
+|-------------------------|--------|-----------------|
+| `payment_intent_id`     | `UUID` | Intent ID       |
+| `order_id`              | `str`  | Order reference |
+| `amount_cents`          | `int`  | Actual amount   |
+| `expected_amount_cents` | `int`  | Expected amount |
+| `tx_signature`          | `str   | None`           | Solana tx signature |
 
 ---
 
@@ -1801,11 +1809,11 @@ functions:
 
 Typical latencies (mainnet, API response time):
 
-| Operation | P50 | P95 | P99 |
-|-----------|-----|-----|-----|
-| Create intent | 120ms | 250ms | 400ms |
-| Retrieve intent | 80ms | 150ms | 300ms |
-| Webhook verify | 5ms | 10ms | 20ms |
+| Operation       | P50   | P95   | P99   |
+|-----------------|-------|-------|-------|
+| Create intent   | 120ms | 250ms | 400ms |
+| Retrieve intent | 80ms  | 150ms | 300ms |
+| Webhook verify  | 5ms   | 10ms  | 20ms  |
 
 *Measured from US-East to api.stendly.com*
 
@@ -1958,7 +1966,7 @@ from unittest.mock import Mock, patch
 from stendly import Client
 
 def test_create_intent():
-    client = Client(api_key="st_test_...")
+    client = Client(api_key="st_live_...")
     
     # Mock HTTP response
     mock_response = {
@@ -2067,17 +2075,18 @@ A: Yes. Both `Client` and `AsyncClient` are thread-safe for their respective par
 
 ### Common Issues
 
-| Issue | Solution |
-|-------|----------|
-| `AuthenticationError` | Check API key format; regenerate if leaked |
-| `ValidationError` | Validate input before API call |
-| `RateLimitError` | Implement backoff; respect `Retry-After` header |
-| `APIConnectionError` | Check internet; increase timeout; retry |
+| Issue                      | Solution                                                 |
+|----------------------------|----------------------------------------------------------|
+| `AuthenticationError`      | Check API key format; regenerate if leaked               |
+| `ValidationError`          | Validate input before API call                           |
+| `RateLimitError`           | Implement backoff; respect `Retry-After` header          |
+| `APIConnectionError`       | Check internet; increase timeout; retry                  |
 | Webhook verification fails | Verify webhook secret; use raw payload; check clock sync |
 
 ### "Authentication failed"
 
-- Check API key format: must start with `st_live_` (mainnet) or `st_test_` (devnet)
+- Check API key format: must start with `st_live_`
+- Ensure correct environment: `"devnet"` for development, `"mainnet"` for production
 - Ensure no extra spaces or newlines in key
 - Verify key is active in dashboard
 
@@ -2126,12 +2135,12 @@ logger.setLevel(logging.DEBUG)
 ### Getting Help
 
 1. Check this documentation
-2. Search [GitHub Issues](https://github.com/stendly/stendly-python/issues)
+2. Search [GitHub Issues](https://github.com/stendly-dev/python-sdk/issues)
 3. Open a new issue with:
-   - SDK version
-   - Python version
-   - Error message + stack trace
-   - Code snippet
+    - SDK version
+    - Python version
+    - Error message + stack trace
+    - Code snippet
 
 ---
 
@@ -2269,6 +2278,7 @@ if os.getenv("ENVIRONMENT") == "production":
 #### Prevent Replay Attacks
 
 The SDK does this automatically (timestamp check), but ensure:
+
 - Clock is synchronized (NTP)
 - Tolerance not increased beyond 5 minutes
 
@@ -2322,8 +2332,8 @@ ruff format .
 ### Development Setup
 
 ```bash
-git clone https://github.com/stendly/stendly-python.git
-cd stendly-python
+git clone https://github.com/stendly-dev/python-sdk.git
+cd python-sdk
 
 # Install dependencies
 poetry install
@@ -2341,7 +2351,7 @@ ruff format stendly/
 ### Project structure
 
 ```
-stendly-python/
+python-sdk/
 ├── stendly/
 │   ├── __init__.py          # Public API exports
 │   ├── client.py            # Client & AsyncClient
@@ -2371,7 +2381,7 @@ MIT License. See [LICENSE](LICENSE).
 ### Links
 
 - 📖 [API Documentation](https://docs.stendly.com/api)
-- 🐙 [GitHub Repository](https://github.com/stendly/stendly-python)
+- 🐙 [GitHub Repository](https://github.com/stendly-dev/python-sdk)
 - 📦 [PyPI Package](https://pypi.org/project/stendly/)
 - 🏠 [Stendly Website](https://stendly.com)
 - 💬 [Discord Community](https://discord.gg/stendly)
@@ -2380,8 +2390,8 @@ MIT License. See [LICENSE](LICENSE).
 ### Support
 
 - 📧 Email: support@stendly.com
-- 🐛 Bug reports: [GitHub Issues](https://github.com/stendly/stendly-python/issues)
-- 💡 Feature requests: [GitHub Discussions](https://github.com/stendly/stendly-python/discussions)
+- 🐛 Bug reports: [GitHub Issues](https://github.com/stendly-dev/python-sdk/issues)
+- 💡 Feature requests: [GitHub Discussions](https://github.com/stendly-dev/python-sdk/discussions)
 
 ---
 

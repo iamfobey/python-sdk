@@ -15,8 +15,8 @@ Thank you for considering contributing! This document provides guidelines and in
 1. **Clone the repository:**
 
 ```bash
-git clone https://github.com/stendly/stendly-python.git
-cd stendly-python
+git clone https://github.com/stendly-dev/python-sdk.git
+cd python-sdk
 ```
 
 2. **Install dependencies with Poetry:**
@@ -58,10 +58,10 @@ git checkout -b fix/bug-name
 ```
 
 2. Make changes to the code. Follow these guidelines:
-   - Write type hints for all functions
-   - Add docstrings with examples (Google style or NumPy style)
-   - Keep changes focused (one change per PR)
-   - Update tests alongside code changes
+    - Write type hints for all functions
+    - Add docstrings with examples (Google style or NumPy style)
+    - Keep changes focused (one change per PR)
+    - Update tests alongside code changes
 
 3. **Run linter:**
 
@@ -102,6 +102,7 @@ pre-commit run --all-files
 ### Code Style
 
 We follow [PEP 8](https://pep8.org/) with these modifications:
+
 - Line length: 100 characters
 - Use double quotes for strings
 - 4 spaces indentation
@@ -147,6 +148,7 @@ type(scope): description
 ```
 
 Types:
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation changes
@@ -156,6 +158,7 @@ Types:
 - `chore`: Maintenance tasks
 
 Examples:
+
 ```
 feat(intents): add support for terminal_id
 fix(webhooks): correct timestamp validation edge case
@@ -165,21 +168,21 @@ docs(client): add FastAPI integration example
 ### Pull Request Process
 
 1. **Update documentation** if you're changing public APIs
-   - Update docstrings
-   - Update README.md if needed
-   - Add examples for new features
+    - Update docstrings
+    - Update README.md if needed
+    - Add examples for new features
 
 2. **Add tests** for new functionality
-   - Target >95% coverage
-   - Include both unit tests and integration tests (if applicable)
+    - Target >95% coverage
+    - Include both unit tests and integration tests (if applicable)
 
 3. **Update CHANGELOG.md** with your changes under `[Unreleased]`
 
 4. **Create a Pull Request** with:
-   - Clear title (Conventional Commits format)
-   - Description explaining the change
-   - Link to any related issues
-   - Screenshots if UI/UX changes
+    - Clear title (Conventional Commits format)
+    - Description explaining the change
+    - Link to any related issues
+    - Screenshots if UI/UX changes
 
 5. **Wait for review** - we'll review within 2-3 business days
 
@@ -208,6 +211,7 @@ def test_create_intent_success():
 #### Integration Tests
 
 Integration tests (marked with `@pytest.mark.integration`) require:
+
 - `STENDLY_TEST_KEY` environment variable (devnet key)
 - Live API calls to devnet
 
@@ -226,11 +230,11 @@ pytest -m integration
 ### Documentation
 
 - Every public method needs a docstring with:
-  - Description
-  - Args section (with types)
-  - Returns section (with type)
-  - Raises section (all exceptions)
-  - At least one example
+    - Description
+    - Args section (with types)
+    - Returns section (with type)
+    - Raises section (all exceptions)
+    - At least one example
 
 - Use reStructuredText or Google style (consistent with existing code)
 
@@ -247,7 +251,7 @@ pytest -m integration
 ## Project Structure
 
 ```
-stendly-python/
+python-sdk/
 ├── stendly/
 │   ├── __init__.py          # Public API exports
 │   ├── client.py            # Client & AsyncClient
@@ -296,8 +300,9 @@ stendly-python/
 ## Questions?
 
 Open an issue or discussion on GitHub:
-- Bug reports: [GitHub Issues](https://github.com/stendly/stendly-python/issues)
-- Feature requests: [GitHub Discussions](https://github.com/stendly/stendly-python/discussions)
+
+- Bug reports: [GitHub Issues](https://github.com/stendly-dev/python-sdk/issues)
+- Feature requests: [GitHub Discussions](https://github.com/stendly-dev/python-sdk/discussions)
 - Questions: support@stendly.com
 
 ---

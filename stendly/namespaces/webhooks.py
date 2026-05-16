@@ -332,7 +332,7 @@ class WebhooksNamespace:
 
         # Parse signature header
         # Format: "t=timestamp,v1=hash1,v2=hash2"
-        timestamp_str, *signatures = self._parse_signature_header(signature_header)
+        timestamp_str, signatures = self._parse_signature_header(signature_header)
 
         if not timestamp_str:
             raise SignatureVerificationError(
@@ -340,7 +340,6 @@ class WebhooksNamespace:
                 reason="invalid_header_format",
             )
 
-        # Verify timestamp
         try:
             timestamp = int(timestamp_str)
         except ValueError:
@@ -349,6 +348,7 @@ class WebhooksNamespace:
                 reason="invalid_timestamp",
             )
 
+        # Verify timestamp
         current_time = int(time.time())
         age = current_time - timestamp
 
