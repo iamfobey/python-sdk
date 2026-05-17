@@ -188,6 +188,7 @@ class HTTPClient:
 
                 # Client errors (4xx except 429) are not retryable
                 if 400 <= response.status_code < 500:
+                    logger.error(f"HTTP {response.status_code} response body: {response.text}")
                     self._handle_error_response(response)
                     return response  # unreachable due to raise in handler
 
@@ -256,6 +257,8 @@ class HTTPClient:
         elif response.status_code == 400:
             field = error_details.get("field") if isinstance(error_details, dict) else None
             raise ValidationError(error_message, field, error_details, 400, request_id)
+        elif response.status_code == 422:
+            raise ValidationError(error_message, details=error_details, status_code=422, request_id=request_id)
         elif response.status_code == 429:
             retry_after = response.headers.get("Retry-After")
             retry_secs = int(retry_after) if retry_after and retry_after.isdigit() else None
@@ -502,6 +505,8 @@ class AsyncHTTPClient:
         elif response.status_code == 400:
             field = error_details.get("field") if isinstance(error_details, dict) else None
             raise ValidationError(error_message, field, error_details, 400, request_id)
+        elif response.status_code == 422:
+            raise ValidationError(error_message, details=error_details, status_code=422, request_id=request_id)
         elif response.status_code == 429:
             retry_after = response.headers.get("Retry-After")
             retry_secs = int(retry_after) if retry_after and retry_after.isdigit() else None

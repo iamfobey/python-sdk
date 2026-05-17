@@ -403,11 +403,31 @@ class MerchantProfile(BaseModel):
         ),
         examples=["st_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"],
     )
-    verification_status: Optional[str] = Field(
+    verification_status: Optional[int] = Field(
         None,
         alias="verificationStatus",
-        description="KYB verification status (pending, verified, rejected)",
+        description="KYB verification status (0=unverified, 1=pending, 2=verified, 3=rejected)",
     )
+
+    _STATUS_LABELS = {
+        0: "Unverified",
+        1: "Pending",
+        2: "Verified",
+        3: "Rejected",
+    }
+
+    @property
+    def verification_status_label(self) -> str:
+        """Human-readable verification status label."""
+        if self.verification_status is None:
+            return "Unknown"
+        return self._STATUS_LABELS.get(self.verification_status, "Unknown")
+
+    def __str__(self) -> str:
+        return (
+            f"MerchantProfile(name={self.name!r}, "
+            f"verification_status={self.verification_status_label!r})"
+        )
 
 
 class WebhookData(BaseModel):
@@ -519,14 +539,18 @@ class CreatePaymentIntentRequest(BaseModel):
         ... )
     """
     
+    model_config = ConfigDict(populate_by_name=True)
+    
     amount_cents: int = Field(
         ...,
+        alias="amountCents",
         gt=0,
         description="Amount to charge in cents (e.g., 4999 = $49.99)",
         examples=[5000, 9999, 25000],
     )
     order_id: str = Field(
         ...,
+        alias="orderId",
         min_length=1,
         description="Unique order reference (max 100 characters)",
         max_length=100,
@@ -534,6 +558,7 @@ class CreatePaymentIntentRequest(BaseModel):
     )
     terminal_id: Optional[UUID] = Field(
         None,
+        alias="terminalId",
         description="Optional terminal ID for POS/payment scenarios",
     )
 

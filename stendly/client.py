@@ -124,6 +124,25 @@ class BaseClient:
         "devnet": "https://api-devnet.stendly.com",
     }
 
+    # App URLs for public invoice/checkout pages
+    _APP_URLS = {
+        "mainnet": "https://app.stendly.com",
+        "devnet": "https://app-devnet.stendly.com",
+    }
+
+    def invoice_url(self, intent_id: str) -> str:
+        """
+        Build a public checkout URL for a payment intent.
+
+        Args:
+            intent_id: Payment intent UUID
+
+        Returns:
+            Full URL to the checkout page (e.g. https://app.stendly.com/checkout?invoice=...)
+        """
+        app_url = self._APP_URLS.get(self.environment, self._APP_URLS["mainnet"])
+        return f"{app_url}/checkout?invoice={intent_id}"
+
     def __init__(
         self,
         api_key: str,
